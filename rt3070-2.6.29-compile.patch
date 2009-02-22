@@ -1,0 +1,579 @@
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/common/2870_rtmp_init.c new/2008_1225_RT3070_Linux_STA_v2.0.1.0/common/2870_rtmp_init.c
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/common/2870_rtmp_init.c	2008-12-24 01:24:20.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/common/2870_rtmp_init.c	2009-01-15 12:00:16.000000000 -0500
+@@ -751,7 +751,7 @@ Note:
+ NDIS_STATUS	 CreateThreads( 
+ 	IN	struct net_device *net_dev)
+ {
+-	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->priv;
++	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->ml_priv;
+ 	POS_COOKIE pObj = (POS_COOKIE) pAd->OS_Cookie;
+ 
+ 	//init_MUTEX(&(pAd->usbdev_semaphore));
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_main_dev.c new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_main_dev.c
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_main_dev.c	2008-12-24 02:36:30.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_main_dev.c	2009-01-15 11:59:44.000000000 -0500
+@@ -133,7 +133,7 @@ Note:
+ */
+ int MainVirtualIF_close(IN struct net_device *net_dev)
+ {
+-    RTMP_ADAPTER *pAd = net_dev->priv;
++    RTMP_ADAPTER *pAd = net_dev->ml_priv;
+ 
+ 	// Sanity check for pAd
+ 	if (pAd == NULL)
+@@ -173,7 +173,7 @@ Note:
+ */
+ int MainVirtualIF_open(IN struct net_device *net_dev)
+ {
+-    RTMP_ADAPTER *pAd = net_dev->priv;
++    RTMP_ADAPTER *pAd = net_dev->ml_priv;
+ 
+ 	// Sanity check for pAd
+ 	if (pAd == NULL)
+@@ -215,7 +215,7 @@ Note:
+ int rt28xx_close(IN PNET_DEV dev)
+ {
+ 	struct net_device * net_dev = (struct net_device *)dev;
+-    RTMP_ADAPTER	*pAd = net_dev->priv;
++    RTMP_ADAPTER	*pAd = net_dev->ml_priv;
+ 	BOOLEAN 		Cancelled = FALSE;
+ 	UINT32			i = 0;
+ #ifdef RT2870
+@@ -428,7 +428,7 @@ int rt28xx_close(IN PNET_DEV dev)
+ 
+ static int rt28xx_init(IN struct net_device *net_dev)
+ {
+-	PRTMP_ADAPTER 			pAd = (PRTMP_ADAPTER)net_dev->priv;
++	PRTMP_ADAPTER 			pAd = (PRTMP_ADAPTER)net_dev->ml_priv;
+ 	UINT					index;
+ 	UCHAR					TmpPhy;
+ //	ULONG					Value=0;
+@@ -695,8 +695,8 @@ err1:
+ #endif // DOT11_N_SUPPORT //
+ 	RT28XX_IRQ_RELEASE(net_dev);
+ 
+-	// shall not set priv to NULL here because the priv didn't been free yet.
+-	//net_dev->priv = 0;
++	// shall not set ml_priv to NULL here because the ml_priv didn't been free yet.
++	//net_dev->ml_priv = 0;
+ #ifdef INF_AMAZON_SE
+ err0:
+ #endif // INF_AMAZON_SE //
+@@ -723,7 +723,7 @@ Note:
+ int rt28xx_open(IN PNET_DEV dev)
+ {				 
+ 	struct net_device * net_dev = (struct net_device *)dev;
+-	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)net_dev->priv;
++	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)net_dev->ml_priv;
+ 	int retval = 0;
+  	POS_COOKIE pObj;
+ 
+@@ -732,7 +732,7 @@ int rt28xx_open(IN PNET_DEV dev)
+ 	if (pAd == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -1;
+ 	}
+ 
+@@ -1410,7 +1410,7 @@ INT __devinit   rt28xx_probe(
+ 	if (status != NDIS_STATUS_SUCCESS) 
+ 		goto err_out_free_netdev;
+ 
+-	net_dev->priv = (PVOID)pAd;
++	net_dev->ml_priv = (PVOID)pAd;
+     pAd->net_dev = net_dev; // must be before RT28XXNetDevInit()
+ 
+ 	RT28XXNetDevInit(_dev_p, net_dev, pAd);
+@@ -1511,7 +1511,7 @@ Note:
+ int rt28xx_packet_xmit(struct sk_buff *skb)
+ {
+ 	struct net_device *net_dev = skb->dev;
+-	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->priv;
++	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->ml_priv;
+ 	int status = 0;
+ 	PNDIS_PACKET pPacket = (PNDIS_PACKET) skb;
+ 
+@@ -1591,7 +1591,7 @@ INT rt28xx_send_packets(
+ 	IN struct sk_buff 		*skb_p, 
+ 	IN struct net_device 	*net_dev)
+ {
+-    RTMP_ADAPTER *pAd = net_dev->priv;
++    RTMP_ADAPTER *pAd = net_dev->ml_priv;
+ 
+ 	if (!(net_dev->flags & IFF_UP))
+ 	{
+@@ -1633,7 +1633,7 @@ struct net_device *alloc_netdev(
+     memset(dev, 0, alloc_size);
+ 
+     if (sizeof_priv)
+-        dev->priv = (void *) (((long)(dev + 1) + 31) & ~31);
++        dev->ml_priv = (void *) (((long)(dev + 1) + 31) & ~31);
+ 
+     setup(dev);
+     strcpy(dev->name, mask);
+@@ -1654,7 +1654,7 @@ void CfgInitHook(PRTMP_ADAPTER pAd)
+ struct iw_statistics *rt28xx_get_wireless_stats(
+     IN struct net_device *net_dev)
+ {
+-	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->priv;
++	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) net_dev->ml_priv;
+ 
+ 
+ 	DBGPRINT(RT_DEBUG_TRACE, ("rt28xx_get_wireless_stats --->\n"));
+@@ -1706,18 +1706,18 @@ INT rt28xx_ioctl(
+ 
+ 	if (net_dev->priv_flags == INT_MAIN)
+ 	{
+-		pAd = net_dev->priv;
++		pAd = net_dev->ml_priv;
+ 	}
+ 	else
+ 	{
+-		pVirtualAd = net_dev->priv;
+-		pAd = pVirtualAd->RtmpDev->priv;
++		pVirtualAd = net_dev->ml_priv;
++		pAd = pVirtualAd->RtmpDev->ml_priv;
+ 	}
+ 
+ 	if (pAd == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -ENETDOWN;
+ 	}
+ 
+@@ -1754,7 +1754,7 @@ struct net_device_stats *RT28xx_get_ethe
+     RTMP_ADAPTER *pAd = NULL;
+ 
+ 	if (net_dev)
+-		pAd = net_dev->priv;
++		pAd = net_dev->ml_priv;
+ 
+ 	if (pAd)
+ 	{
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_profile.c new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_profile.c
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_profile.c	2008-12-24 02:06:26.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/rt_profile.c	2009-01-15 11:59:41.000000000 -0500
+@@ -925,9 +925,9 @@ NDIS_STATUS	RTMPReadParametersHook(
+ 
+ 	// Save uid and gid used for filesystem access.
+ 	// Set user and group to 0 (root)	
+-	orgfsuid = current->fsuid;
+-	orgfsgid = current->fsgid;
+-	current->fsuid=current->fsgid = 0;
++	orgfsuid = current_fsuid();
++	orgfsgid = current_fsgid();
++	/*	current->fsuid=current->fsgid = 0;*/
+     orgfs = get_fs();
+     set_fs(KERNEL_DS);
+ 
+@@ -1608,9 +1608,10 @@ NDIS_STATUS	RTMPReadParametersHook(
+ 	}
+ 
+ 	set_fs(orgfs);
++#if 0
+ 	current->fsuid = orgfsuid;
+ 	current->fsgid = orgfsgid;
+-
++#endif
+ 	kfree(buffer);
+ 	kfree(tmpbuf);
+ 
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/sta_ioctl.c new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/sta_ioctl.c
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/sta_ioctl.c	2008-12-23 21:54:58.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/sta_ioctl.c	2009-01-15 11:59:34.000000000 -0500
+@@ -579,7 +579,7 @@ rt_ioctl_giwname(struct net_device *dev,
+ 		   struct iw_request_info *info,
+ 		   char *name, char *extra)
+ {
+-//	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++//	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ #ifdef RT2870
+ 	strncpy(name, "RT2870 Wireless", IFNAMSIZ);
+@@ -591,7 +591,7 @@ int rt_ioctl_siwfreq(struct net_device *
+ 			struct iw_request_info *info,
+ 			struct iw_freq *freq, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	int 	chan = -1;
+ 
+     //check if the interface is down
+@@ -631,18 +631,18 @@ int rt_ioctl_giwfreq(struct net_device *
+ 
+ 	if (dev->priv_flags == INT_MAIN)
+ 	{
+-		pAdapter = dev->priv;
++		pAdapter = dev->ml_priv;
+ 	}
+ 	else
+ 	{
+-		pVirtualAd = dev->priv;
+-		pAdapter = pVirtualAd->RtmpDev->priv;
++		pVirtualAd = dev->ml_priv;
++		pAdapter = pVirtualAd->RtmpDev->ml_priv;
+ 	}
+ 
+ 	if (pAdapter == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -ENETDOWN;
+ 	}
+ 
+@@ -660,7 +660,7 @@ int rt_ioctl_siwmode(struct net_device *
+ 		   struct iw_request_info *info,
+ 		   __u32 *mode, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -697,7 +697,7 @@ int rt_ioctl_giwmode(struct net_device *
+ 		   struct iw_request_info *info,
+ 		   __u32 *mode, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	if (ADHOC_ON(pAdapter))
+ 		*mode = IW_MODE_ADHOC;
+@@ -720,7 +720,7 @@ int rt_ioctl_siwsens(struct net_device *
+ 		   struct iw_request_info *info,
+ 		   char *name, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -743,7 +743,7 @@ int rt_ioctl_giwrange(struct net_device 
+ 		   struct iw_request_info *info,
+ 		   struct iw_point *data, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	struct iw_range *range = (struct iw_range *) extra;
+ 	u16 val;
+@@ -827,7 +827,7 @@ int rt_ioctl_siwap(struct net_device *de
+ 		      struct iw_request_info *info,
+ 		      struct sockaddr *ap_addr, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+     NDIS_802_11_MAC_ADDRESS Bssid;
+ 
+ 	//check if the interface is down
+@@ -867,7 +867,7 @@ int rt_ioctl_giwap(struct net_device *de
+ 		      struct iw_request_info *info,
+ 		      struct sockaddr *ap_addr, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;    
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;    
+ 
+ 	if (INFRA_ON(pAdapter) || ADHOC_ON(pAdapter))
+ 	{
+@@ -935,7 +935,7 @@ int rt_ioctl_iwaplist(struct net_device 
+ 			struct iw_request_info *info,
+ 			struct iw_point *data, char *extra)
+ {
+- 	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++ 	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	struct sockaddr addr[IW_MAX_AP];
+ 	struct iw_quality qual[IW_MAX_AP];
+@@ -971,7 +971,7 @@ int rt_ioctl_siwscan(struct net_device *
+ 			struct iw_request_info *info,
+ 			struct iw_point *data, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	ULONG								Now;
+ 	int Status = NDIS_STATUS_SUCCESS;
+@@ -1053,7 +1053,7 @@ int rt_ioctl_giwscan(struct net_device *
+ 			struct iw_point *data, char *extra)
+ {
+ 
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	int i=0;
+ 	char *current_ev = extra, *previous_ev = extra;
+ 	char *end_buf;
+@@ -1421,7 +1421,7 @@ int rt_ioctl_siwessid(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *essid)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1462,7 +1462,7 @@ int rt_ioctl_giwessid(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *essid)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	
+ 	data->flags = 1;		
+     if (MONITOR_ON(pAdapter))
+@@ -1501,7 +1501,7 @@ int rt_ioctl_siwnickn(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *nickname)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+     //check if the interface is down
+     if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1524,7 +1524,7 @@ int rt_ioctl_giwnickn(struct net_device 
+ 			 struct iw_request_info *info,
+ 			 struct iw_point *data, char *nickname)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	if (data->length > strlen(pAdapter->nickname) + 1)
+ 		data->length = strlen(pAdapter->nickname) + 1;
+@@ -1539,7 +1539,7 @@ int rt_ioctl_siwrts(struct net_device *d
+ 		       struct iw_request_info *info,
+ 		       struct iw_param *rts, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	u16 val;
+ 
+     //check if the interface is down
+@@ -1568,7 +1568,7 @@ int rt_ioctl_giwrts(struct net_device *d
+ 		       struct iw_request_info *info,
+ 		       struct iw_param *rts, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1588,7 +1588,7 @@ int rt_ioctl_siwfrag(struct net_device *
+ 			struct iw_request_info *info,
+ 			struct iw_param *frag, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	u16 val;
+ 
+ 	//check if the interface is down
+@@ -1615,7 +1615,7 @@ int rt_ioctl_giwfrag(struct net_device *
+ 			struct iw_request_info *info,
+ 			struct iw_param *frag, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1637,7 +1637,7 @@ int rt_ioctl_siwencode(struct net_device
+ 			  struct iw_request_info *info,
+ 			  struct iw_point *erq, char *extra)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 	//check if the interface is down
+     	if(!RTMP_TEST_FLAG(pAdapter, fRTMP_ADAPTER_INTERRUPT_IN_USE))
+@@ -1744,7 +1744,7 @@ rt_ioctl_giwencode(struct net_device *de
+ 			  struct iw_request_info *info,
+ 			  struct iw_point *erq, char *key)
+ {
+-	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	int kid;
+ 
+ 	//check if the interface is down
+@@ -1811,19 +1811,19 @@ rt_ioctl_setparam(struct net_device *dev
+ 	
+ 	if (dev->priv_flags == INT_MAIN)
+ 	{
+-		pAdapter = dev->priv;
++		pAdapter = dev->ml_priv;
+ 	}
+ 	else
+ 	{
+-		pVirtualAd = dev->priv;
+-		pAdapter = pVirtualAd->RtmpDev->priv;
++		pVirtualAd = dev->ml_priv;
++		pAdapter = pVirtualAd->RtmpDev->ml_priv;
+ 	}
+ 	pObj = (POS_COOKIE) pAdapter->OS_Cookie;
+ 
+ 	if (pAdapter == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -ENETDOWN;
+ 	}
+ 
+@@ -1879,7 +1879,7 @@ rt_private_get_statistics(struct net_dev
+ 		struct iw_point *wrq, char *extra)
+ {
+ 	INT				Status = 0;
+-    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+     if (extra == NULL)
+     {
+@@ -2006,18 +2006,18 @@ rt_private_show(struct net_device *dev, 
+     u32             subcmd = wrq->flags;
+ 
+ 	if (dev->priv_flags == INT_MAIN)
+-		pAd = dev->priv;
++		pAd = dev->ml_priv;
+ 	else
+ 	{
+-		pVirtualAd = dev->priv;
+-		pAd = pVirtualAd->RtmpDev->priv;
++		pVirtualAd = dev->ml_priv;
++		pAd = pVirtualAd->RtmpDev->ml_priv;
+ 	}
+ 	pObj = (POS_COOKIE) pAd->OS_Cookie;
+ 
+ 	if (pAd == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -ENETDOWN;
+ 	}
+ 
+@@ -2164,7 +2164,7 @@ int rt_ioctl_siwmlme(struct net_device *
+ 			   union iwreq_data *wrqu,
+ 			   char *extra)
+ {
+-	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 	struct iw_mlme *pMlme = (struct iw_mlme *)wrqu->data.pointer;
+ 	MLME_QUEUE_ELEM				MsgElem;
+ 	MLME_DISASSOC_REQ_STRUCT	DisAssocReq;
+@@ -2221,7 +2221,7 @@ int rt_ioctl_siwauth(struct net_device *
+ 			  struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
+ {
+-	PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	struct iw_param *param = &wrqu->param;
+ 
+     //check if the interface is down
+@@ -2374,7 +2374,7 @@ int rt_ioctl_giwauth(struct net_device *
+ 			       struct iw_request_info *info,
+ 			       union iwreq_data *wrqu, char *extra)
+ {
+-	PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	struct iw_param *param = &wrqu->param;
+ 
+     //check if the interface is down
+@@ -2448,7 +2448,7 @@ int rt_ioctl_siwencodeext(struct net_dev
+ 			   union iwreq_data *wrqu,
+ 			   char *extra)
+ 			{
+-    PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->priv;
++    PRTMP_ADAPTER   pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 	struct iw_point *encoding = &wrqu->encoding;
+ 	struct iw_encode_ext *ext = (struct iw_encode_ext *)extra;
+     int keyIdx, alg = ext->alg;
+@@ -2561,7 +2561,7 @@ rt_ioctl_giwencodeext(struct net_device 
+ 			  struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
+ {
+-	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 	PCHAR pKey = NULL;
+ 	struct iw_point *encoding = &wrqu->encoding;
+ 	struct iw_encode_ext *ext = (struct iw_encode_ext *)extra;
+@@ -2645,7 +2645,7 @@ int rt_ioctl_siwgenie(struct net_device 
+ 			  struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
+ {
+-	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 	
+ 	if (wrqu->data.length > MAX_LEN_OF_RSNIE ||
+ 	    (wrqu->data.length && extra == NULL))
+@@ -2670,7 +2670,7 @@ int rt_ioctl_giwgenie(struct net_device 
+ 			       struct iw_request_info *info,
+ 			       union iwreq_data *wrqu, char *extra)
+ {
+-	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 	
+ 	if ((pAd->StaCfg.RSNIE_Len == 0) ||
+ 		(pAd->StaCfg.AuthMode < Ndis802_11AuthModeWPA))
+@@ -2716,7 +2716,7 @@ int rt_ioctl_siwpmksa(struct net_device 
+ 			   union iwreq_data *wrqu,
+ 			   char *extra)
+ {
+-	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++	PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+ 	struct iw_pmksa *pPmksa = (struct iw_pmksa *)wrqu->data.pointer;
+ 	INT	CachedIdx = 0, idx = 0;
+ 
+@@ -2800,7 +2800,7 @@ rt_private_ioctl_bbp(struct net_device *
+ 	UINT32				bbpValue;
+ 	BOOLEAN				bIsPrintAllBBP = FALSE;
+ 	INT					Status = 0;
+-    PRTMP_ADAPTER       pAdapter = (PRTMP_ADAPTER) dev->priv;
++    PRTMP_ADAPTER       pAdapter = (PRTMP_ADAPTER) dev->ml_priv;
+ 
+ 
+ 	memset(extra, 0x00, IW_PRIV_SIZE_MASK);
+@@ -2945,7 +2945,7 @@ int rt_ioctl_siwrate(struct net_device *
+ 			struct iw_request_info *info,
+ 			union iwreq_data *wrqu, char *extra)
+ {
+-    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+     UINT32          rate = wrqu->bitrate.value, fixed = wrqu->bitrate.fixed;
+ 
+     //check if the interface is down
+@@ -3003,7 +3003,7 @@ int rt_ioctl_giwrate(struct net_device *
+ 			       struct iw_request_info *info,
+ 			       union iwreq_data *wrqu, char *extra)
+ {
+-    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->priv;
++    PRTMP_ADAPTER   pAd = (PRTMP_ADAPTER) dev->ml_priv;
+     int rate_index = 0, rate_count = 0;
+     HTTRANSMIT_SETTING ht_setting; 
+     __s32 ralinkrate[] =
+@@ -5396,19 +5396,19 @@ INT rt28xx_sta_ioctl(
+ 
+ 	if (net_dev->priv_flags == INT_MAIN)
+ 	{
+-		pAd = net_dev->priv;
++		pAd = net_dev->ml_priv;
+ 	}
+ 	else
+ 	{
+-		pVirtualAd = net_dev->priv;
+-		pAd = pVirtualAd->RtmpDev->priv;
++		pVirtualAd = net_dev->ml_priv;
++		pAd = pVirtualAd->RtmpDev->ml_priv;
+ 	}
+ 	pObj = (POS_COOKIE) pAd->OS_Cookie;
+ 
+ 	if (pAd == NULL)
+ 	{
+ 		/* if 1st open fail, pAd will be free;
+-		   So the net_dev->priv will be NULL in 2rd open */
++		   So the net_dev->ml_priv will be NULL in 2rd open */
+ 		return -ENETDOWN;
+ 	}
+ 

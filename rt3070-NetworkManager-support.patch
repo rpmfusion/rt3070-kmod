@@ -1,0 +1,17 @@
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/config.mk	2008-12-25 00:21:24.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/config.mk	2009-01-15 11:05:03.000000000 -0500
+@@ -17,12 +17,12 @@ HAS_WDS=n
+ 
+ #ifdef WPA_SUPPLICANT_SUPPORT
+ # Support Wpa_Supplicant
+-HAS_WPA_SUPPLICANT=n
++HAS_WPA_SUPPLICANT=y
+ #endif // WPA_SUPPLICANT_SUPPORT //
+ 
+ #ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
+ # Support Native WpaSupplicant for Network Maganger
+-HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=n
++HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
+ #endif // NATIVE_WPA_SUPPLICANT_SUPPORT //
+ 
+ #Support Net interface block while Tx-Sw queue full

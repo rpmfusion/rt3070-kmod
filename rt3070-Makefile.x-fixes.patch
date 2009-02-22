@@ -1,0 +1,67 @@
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.4 new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.4
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.4	2008-12-25 00:08:02.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.4	2009-01-15 11:55:44.000000000 -0500
+@@ -2,8 +2,6 @@ include $(RT28xx_DIR)/os/linux/config.mk
+ 
+ ifeq ($(RT28xx_MODE), STA)
+ MOD_NAME = rt$(CHIPSET)sta
+-DAT_PATH = /etc/Wireless/RT$(CHIPSET)STA
+-DAT_FILE_NAME = RT$(CHIPSET)STA.dat
+ endif
+ 
+ OBJ := $(MOD_NAME).o
+@@ -86,15 +84,12 @@ ifeq ($(RT28xx_MODE),STA)
+ endif
+ 
+ install:
+-	rm -rf $(DAT_PATH)
+-	$(shell [ ! -f /etc/Wireless ] && mkdir /etc/Wireless)
+-	mkdir $(DAT_PATH)
+-	cp $(RT28xx_DIR)/$(DAT_FILE_NAME) $(DAT_PATH)/.
+-	install -d $(LINUX_SRC_MODULE)
+-	install -m 644 -c $(addsuffix .o,$(MOD_NAME)) $(LINUX_SRC_MODULE)
+-	/sbin/depmod -a ${shell uname -r}
++	#install -d $(LINUX_SRC_MODULE)
++	#install -m 644 -c $(addsuffix .o,$(MOD_NAME)) $(LINUX_SRC_MODULE)
++	mkdir -p $(INST_DIR)
++	install -d $(INST_DIR)
++	install -m 644 -c $(addsuffix .ko,$(MOD_NAME))  $(INST_DIR)
++	#/sbin/depmod -a ${shell uname -r}
+ 
+ uninstall:
+-#	rm -rf $(DAT_PATH)
+-	rm -rf $(addprefix $(LINUX_SRC_MODULE),$(addsuffix .o,$(MOD_NAME)))
+ 	/sbin/depmod -a ${shell uname -r}
+diff -rupN old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.6 new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.6
+--- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.6	2008-12-25 00:20:22.000000000 -0500
++++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/Makefile.6	2009-01-15 11:55:44.000000000 -0500
+@@ -2,8 +2,6 @@ include $(RT28xx_DIR)/os/linux/config.mk
+ 
+ ifeq ($(RT28xx_MODE), STA)
+ MOD_NAME = rt$(CHIPSET)sta
+-DAT_PATH = /etc/Wireless/RT$(CHIPSET)STA
+-DAT_FILE_NAME = RT$(CHIPSET)STA.dat
+ endif
+ 
+ obj-m := $(MOD_NAME).o
+@@ -78,15 +76,12 @@ ifeq ($(RT28xx_MODE),STA)
+ endif
+ 
+ install:
+-	rm -rf $(DAT_PATH)
+-	$(shell [ ! -f /etc/Wireless ] && mkdir /etc/Wireless)
+-	mkdir $(DAT_PATH)
+-	cp $(RT28xx_DIR)/$(DAT_FILE_NAME) $(DAT_PATH)/.
+-	install -d $(LINUX_SRC_MODULE)
+-	install -m 644 -c $(addsuffix .ko,$(MOD_NAME)) $(LINUX_SRC_MODULE)
+-	/sbin/depmod -a ${shell uname -r}
++	mkdir -p $(INST_DIR)
++	install -d $(INST_DIR)
++	#install -m 644 -c $(addsuffix .ko,$(MOD_NAME)) $(LINUX_SRC_MODULE)
++	install -m 644 -c $(addsuffix .ko,$(MOD_NAME))  $(INST_DIR)
++	#/sbin/depmod -a ${shell uname -r}
+ 
+ uninstall:
+-#	rm -rf $(DAT_PATH)
+ 	rm -rf $(addprefix $(LINUX_SRC_MODULE),$(addsuffix .ko,$(MOD_NAME)))
+ 	/sbin/depmod -a ${shell uname -r}
