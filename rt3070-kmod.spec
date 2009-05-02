@@ -7,7 +7,7 @@
 
 Name:		rt3070-kmod
 Version:	2.0.1.0
-Release:	3%{?dist}.2
+Release:	3%{?dist}.3
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
@@ -85,6 +85,9 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat May 02 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.0.1.0-3.3
+- rebuild for new kernels
+
 * Sun Apr 26 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.0.1.0-3.2
 - rebuild for new kernels
 
