@@ -1,6 +1,6 @@
---- old/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/config.mk	2008-12-25 00:21:24.000000000 -0500
-+++ new/2008_1225_RT3070_Linux_STA_v2.0.1.0/os/linux/config.mk	2009-01-15 11:05:03.000000000 -0500
-@@ -17,12 +17,12 @@ HAS_WDS=n
+--- 2009_0302_RT2870_Linux_STA_v2.1.0.0.old/os/linux/config.mk	2009-03-10 00:47:50.000000000 -0400
++++ 2009_0302_RT2870_Linux_STA_v2.1.0.0/os/linux/config.mk	2009-03-25 20:40:49.000000000 -0400
+@@ -6,12 +6,12 @@ HAS_28xx_QA=n
  
  #ifdef WPA_SUPPLICANT_SUPPORT
  # Support Wpa_Supplicant
