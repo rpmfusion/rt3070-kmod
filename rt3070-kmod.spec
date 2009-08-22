@@ -3,24 +3,26 @@
 # "buildforkernels newest" macro for just that build; immediately after
 # queuing that build enable the macro again for subsequent builds; that way
 # a new akmod package will only get build when a new one is actually needed
-%define buildforkernels newest
+#define buildforkernels newest
 
 Name:		rt3070-kmod
 Version:	2.1.1.0
-Release:	1%{?dist}.9
+Release:	2%{?dist}
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
 License:	GPLv2+
 URL:		http://www.ralinktech.com/ralink/Home/Support/Linux.html
-Source0:	http://www.ralinktech.com.tw/data/drivers/2009_0520_RT3070_Linux_STA_v%{version}.tar.gz
+Source0:	http://www.ralinktech.com.tw/data/drivers/2009_0525_RT3070_Linux_STA_v%{version}.bz2
 Source11:	rt3070-kmodtool-excludekernel-filterfile
 
 Patch1:		rt3070-no2.4-in-kernelversion.patch
 Patch2:		rt3070-Makefile.x-fixes.patch
 Patch3:		rt3070-NetworkManager-support.patch
 Patch4:		rt3070-strip-tftpboot-copy.patch
-Patch5:		rt3070-2.6.29-compile.patch
+Patch5:		rt3070-2.6.31-compile.patch
+Patch6:		rt3070-suppress-flood.patch
+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	%{_bindir}/kmodtool
@@ -46,11 +48,12 @@ kmodtool --target %{_target_cpu}  --repo rpmfusion --kmodname %{name} --filterfi
 
 %setup -q -c -T -a 0
 pushd *RT3070*Linux*STA*
-find . -type d -exec chmod 755 {} \;
 %patch1 -p1 -b .no24
 %patch2 -p1 -b .rpmbuild
 %patch3 -p1 -b .NetworkManager
 %patch4 -p1 -b .tftpboot
+%patch5 -p1 -b .2.6.31
+%patch6 -p1 -b .messageflood
 popd
 
 # Fix permissions
@@ -67,12 +70,6 @@ done
 
 for kernel_version in %{?kernel_versions} ; do
  cp -a *RT3070*Linux*STA* _kmod_build_${kernel_version%%___*}
- pushd _kmod_build_${kernel_version%%___*}
-  if [[ $kernel_version > "2.6.29" ]]; then
-# There are still build errors that need to be corrected
-%patch5 -p1 -b .2.6.29
-  fi
- popd
 done
 
 %build
@@ -93,6 +90,10 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat Aug 22 2009 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.1.1.0-2
+- Suppress a flood of system log messages
+- Fix for kernels >= 2.6.31
+
 * Sat Aug 22 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-1.9
 - rebuild for new kernels
 

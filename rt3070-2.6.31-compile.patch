@@ -1,0 +1,113 @@
+diff -rupN 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/include/rtmp_os.h 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/rtmp_os.h
+--- 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/include/rtmp_os.h	2009-05-20 23:33:56.000000000 -0400
++++ 2009_0525_RT3070_Linux_STA_v2.1.1.0/include/rtmp_os.h	2009-08-04 00:00:46.000000000 -0400
+@@ -53,6 +53,7 @@
+ */
+ typedef struct _RTMP_OS_NETDEV_OP_HOOK_
+ {
++  /*
+ 	void			*open;
+ 	void			*stop;
+ 	void			*xmit;
+@@ -63,6 +64,8 @@ typedef struct _RTMP_OS_NETDEV_OP_HOOK_
+ 	unsigned char devAddr[6];
+ 	unsigned char	devName[16];
+ 	unsigned char	needProtcted;
++  */
++  struct net_device_ops *netdev_ops;
+ }RTMP_OS_NETDEV_OP_HOOK, *PRTMP_OS_NETDEV_OP_HOOK;
+ 
+ 
+diff -rupN 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/os/linux/rt_linux.c 2009_0525_RT3070_Linux_STA_v2.1.1.0/os/linux/rt_linux.c
+--- 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/os/linux/rt_linux.c	2009-05-20 23:33:56.000000000 -0400
++++ 2009_0525_RT3070_Linux_STA_v2.1.1.0/os/linux/rt_linux.c	2009-08-04 00:04:15.000000000 -0400
+@@ -1506,20 +1506,21 @@ int RtmpOSNetDevAttach(
+ 	if (pDevOpHook)
+ 	{
+ 		PRTMP_ADAPTER pAd = RTMP_OS_NETDEV_GET_PRIV(pNetDev);
+-	
++		pNetDev->netdev_ops = pDevOpHook->netdev_ops;
++		/*	
+ 		pNetDev->open			= pDevOpHook->open;
+ 		pNetDev->stop			= pDevOpHook->stop;
+ 		pNetDev->hard_start_xmit	= (HARD_START_XMIT_FUNC)(pDevOpHook->xmit);
+ 		pNetDev->do_ioctl		= pDevOpHook->ioctl;
+-		
++		*/
+ 		/* if you don't implement get_stats, just leave the callback function as NULL, a dummy 
+ 		     function will make kernel panic.
+ 		*/
+-		if (pDevOpHook->get_stats)
++		/*if (pDevOpHook->get_stats)
+ 			pNetDev->get_stats = pDevOpHook->get_stats;
+-
++		*/
+ 		/* OS specific flags, here we used to indicate if we are virtual interface */
+-		pNetDev->priv_flags = pDevOpHook->priv_flags; 
++		//		pNetDev->priv_flags = pDevOpHook->priv_flags; 
+ 
+ #if (WIRELESS_EXT < 21) && (WIRELESS_EXT >= 12)
+ 		pNetDev->get_wireless_stats = rt28xx_get_wireless_stats;
+@@ -1544,15 +1545,15 @@ int RtmpOSNetDevAttach(
+ #endif // CONFIG_APSTA_MIXED_SUPPORT //
+ 
+ 		// copy the net device mac address to the net_device structure.
+-		NdisMoveMemory(pNetDev->dev_addr, &pDevOpHook->devAddr[0], MAC_ADDR_LEN);
++		//		NdisMoveMemory(pNetDev->dev_addr, &pDevOpHook->devAddr[0], MAC_ADDR_LEN);
+ 
+-		rtnl_locked = pDevOpHook->needProtcted;
++		//		rtnl_locked = pDevOpHook->needProtcted;
+ 	}
+-
++	/*
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+ 	pNetDev->validate_addr = NULL;
+ #endif
+-
++	*/
+ 	if (rtnl_locked)
+ 		ret = register_netdevice(pNetDev);
+ 	else
+diff -rupN 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/os/linux/rt_main_dev.c 2009_0525_RT3070_Linux_STA_v2.1.1.0/os/linux/rt_main_dev.c
+--- 2009_0525_RT3070_Linux_STA_v2.1.1.0.old/os/linux/rt_main_dev.c	2009-05-20 23:33:56.000000000 -0400
++++ 2009_0525_RT3070_Linux_STA_v2.1.1.0/os/linux/rt_main_dev.c	2009-08-04 00:06:08.000000000 -0400
+@@ -504,6 +504,21 @@ err:
+ 	return (-1);
+ } /* End of rt28xx_open */
+ 
++static const struct net_device_ops rt2870_netdev_ops = {
++  .ndo_open               = MainVirtualIF_open,//
++  .ndo_stop               = MainVirtualIF_close,//
++  .ndo_do_ioctl           = rt28xx_ioctl,//
++  .ndo_get_stats          = RT28xx_get_ether_stats,//
++  .ndo_validate_addr      = NULL,
++  .ndo_set_mac_address    = eth_mac_addr,
++  .ndo_change_mtu         = eth_change_mtu,
++#ifdef IKANOS_VX_1X0
++  .ndo_start_xmit         = IKANOS_DataFramesTx,//
++#else
++  .ndo_start_xmit         = rt28xx_send_packets,//
++#endif
++};
++
+ 
+ PNET_DEV RtmpPhyNetDevInit(
+ 	IN RTMP_ADAPTER *pAd,
+@@ -520,6 +535,8 @@ PNET_DEV RtmpPhyNetDevInit(
+ 	}
+ 
+ 	NdisZeroMemory((unsigned char *)pNetDevHook, sizeof(RTMP_OS_NETDEV_OP_HOOK));
++	pNetDevHook->netdev_ops = &rt2870_netdev_ops;
++	/*
+ 	pNetDevHook->open = MainVirtualIF_open;
+ 	pNetDevHook->stop = MainVirtualIF_close;
+ 	pNetDevHook->xmit = rt28xx_send_packets;
+@@ -531,7 +548,7 @@ PNET_DEV RtmpPhyNetDevInit(
+ 	pNetDevHook->get_stats = RT28xx_get_ether_stats;
+ 
+ 	pNetDevHook->needProtcted = FALSE;
+-
++	*/
+ 	RTMP_OS_NETDEV_SET_PRIV(net_dev, pAd);
+ 	//net_dev->priv = (PVOID)pAd;
+ 	pAd->net_dev = net_dev;
