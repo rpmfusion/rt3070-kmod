@@ -1,0 +1,54 @@
+diff -rupN 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/common/cmm_asic.c 2009_0521_RT2860_Linux_STA_V2.1.2.0/common/cmm_asic.c
+--- 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/common/cmm_asic.c	2009-03-25 03:20:30.000000000 -0400
++++ 2009_0521_RT2860_Linux_STA_V2.1.2.0/common/cmm_asic.c	2009-08-22 12:24:53.000000000 -0400
+@@ -609,7 +609,7 @@ VOID AsicSwitchChannel(
+ 								TxPwer = (7+TxPwer);
+ 								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
+ 								R3 |= (TxPwer << 10);
+-								DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer=%d \n", TxPwer));
++								// comment out as it causes flood // DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer=%d \n", TxPwer));
+ 							}
+ 							else
+ 							{
+@@ -623,7 +623,7 @@ VOID AsicSwitchChannel(
+ 								TxPwer2 = (7+TxPwer2);
+ 								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
+ 								R4 |= (TxPwer2 << 7);
+-								DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
++								// comment out as it causes flood // DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
+ 							}
+ 							else
+ 							{
+diff -rupN 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/os/linux/rt_ate.c 2009_0521_RT2860_Linux_STA_V2.1.2.0/os/linux/rt_ate.c
+--- 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/os/linux/rt_ate.c	2009-03-25 04:06:34.000000000 -0400
++++ 2009_0521_RT2860_Linux_STA_V2.1.2.0/os/linux/rt_ate.c	2009-08-22 12:25:24.000000000 -0400
+@@ -4031,7 +4031,7 @@ VOID ATEAsicSwitchChannel(
+ 								TxPwer = (7+TxPwer);
+ 								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
+ 								R3 |= (TxPwer << 10);
+-								ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer=%d \n", TxPwer));
++								// comment out as it causes flood // ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer=%d \n", TxPwer));
+ 							}
+ 							else
+ 							{
+@@ -4045,7 +4045,7 @@ VOID ATEAsicSwitchChannel(
+ 								TxPwer2 = (7+TxPwer2);
+ 								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
+ 								R4 |= (TxPwer2 << 7);
+-								ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
++								// comment out as it causes flood // ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
+ 							}
+ 							else
+ 							{
+diff -rupN 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/os/linux/sta_ioctl.c 2009_0521_RT2860_Linux_STA_V2.1.2.0/os/linux/sta_ioctl.c
+--- 2009_0521_RT2860_Linux_STA_V2.1.2.0.old/os/linux/sta_ioctl.c	2009-04-23 06:07:18.000000000 -0400
++++ 2009_0521_RT2860_Linux_STA_V2.1.2.0/os/linux/sta_ioctl.c	2009-08-22 12:22:44.000000000 -0400
+@@ -1465,7 +1465,7 @@ int rt_ioctl_giwscan(struct net_device *
+ 
+ 	data->length = current_ev - extra;
+     pAdapter->StaCfg.bScanReqIsFromWebUI = FALSE;
+-	DBGPRINT(RT_DEBUG_ERROR ,("===>rt_ioctl_giwscan. %d(%d) BSS returned, data->length = %d\n",i , pAdapter->ScanTab.BssNr, data->length));
++    // comment out as it causes flood in system messages. // DBGPRINT(RT_DEBUG_ERROR ,("===>rt_ioctl_giwscan. %d(%d) BSS returned, data->length = %d\n",i , pAdapter->ScanTab.BssNr, data->length));
+ 	return 0;
+ }
+ #endif
