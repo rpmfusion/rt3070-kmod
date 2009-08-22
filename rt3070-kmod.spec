@@ -3,11 +3,11 @@
 # "buildforkernels newest" macro for just that build; immediately after
 # queuing that build enable the macro again for subsequent builds; that way
 # a new akmod package will only get build when a new one is actually needed
-%define buildforkernels newest
+#define buildforkernels newest
 
 Name:		rt3070-kmod
 Version:	2.1.1.0
-Release:	1%{?dist}.8
+Release:	2%{?dist}
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
@@ -21,6 +21,8 @@ Patch2:		rt3070-Makefile.x-fixes.patch
 Patch3:		rt3070-NetworkManager-support.patch
 Patch4:		rt3070-strip-tftpboot-copy.patch
 Patch5:		rt3070-2.6.29-compile.patch
+Patch6:		rt3070-suppress-flood.patch
+
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	%{_bindir}/kmodtool
@@ -51,6 +53,7 @@ find . -type d -exec chmod 755 {} \;
 %patch2 -p1 -b .rpmbuild
 %patch3 -p1 -b .NetworkManager
 %patch4 -p1 -b .tftpboot
+%patch6 -p1 -b .messageflood
 popd
 
 # Fix permissions
@@ -93,6 +96,9 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat Aug 22 2009 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.1.1.0-2
+- Suppress a flood of system log messages
+
 * Sat Aug 22 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-1.8
 - rebuild for new kernels
 
