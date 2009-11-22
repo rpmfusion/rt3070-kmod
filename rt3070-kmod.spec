@@ -7,7 +7,7 @@
 
 Name:		rt3070-kmod
 Version:	2.1.1.0
-Release:	3%{?dist}.6
+Release:	3%{?dist}.7
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
@@ -26,9 +26,6 @@ Patch6:		rt3070-suppress-flood.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	%{_bindir}/kmodtool
-
-# needed for plague to make sure it builds for i586 and i686
-ExclusiveArch:	i586 i686 x86_64 ppc ppc64
 
 %{!?kernels:BuildRequires: buildsys-build-rpmfusion-kerneldevpkgs-%{?buildforkernels:%{buildforkernels}}%{!?buildforkernels:current}-%{_target_cpu} }
 
@@ -90,6 +87,9 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sun Nov 22 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.7
+- rebuild for new kernel, disable i586 builds
+
 * Tue Nov 10 2009 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.6
 - rebuild for F12 release kernel
 
