@@ -87,6 +87,9 @@ rm -rf $RPM_BUILD_ROOT
 * Sun Jun 27 2010 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.3.0.2-1
 - Update to 2.3.0.2
 
+* Wed Jul 07 2010 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.29
+- rebuild for new kernel
+
 * Fri Jun 18 2010 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.28
 - rebuild for new kernel
 
