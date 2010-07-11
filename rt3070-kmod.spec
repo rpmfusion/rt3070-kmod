@@ -3,26 +3,24 @@
 # "buildforkernels newest" macro for just that build; immediately after
 # queuing that build enable the macro again for subsequent builds; that way
 # a new akmod package will only get build when a new one is actually needed
-%define buildforkernels newest
+#define buildforkernels newest
 
 Name:		rt3070-kmod
-Version:	2.1.1.0
-Release:	3%{?dist}.29
+Version:	2.3.0.2
+Release:	1%{?dist}
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
 License:	GPLv2+
-URL:		http://www.ralinktech.com/ralink/Home/Support/Linux.html
-Source0:	http://www.ralinktech.com.tw/data/drivers/2009_0525_RT3070_Linux_STA_v%{version}.bz2
+URL:		http://www.ralinktech.com/support.php?s=2
+# No more direct link. The file is downloaded from the above page.
+Source0:	DPO_RT3070_LinuxSTA_V2.3.0.2_20100412.tar.bz2
 Source11:	rt3070-kmodtool-excludekernel-filterfile
-
+Patch0:		rt3070-2.6.34.patch
 Patch1:		rt3070-no2.4-in-kernelversion.patch
 Patch2:		rt3070-Makefile.x-fixes.patch
-Patch3:		rt3070-NetworkManager-support.patch
 Patch4:		rt3070-strip-tftpboot-copy.patch
-Patch5:		rt3070-2.6.31-compile.patch
 Patch6:		rt3070-suppress-flood.patch
-
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	%{_bindir}/kmodtool
@@ -45,13 +43,11 @@ kmodtool --target %{_target_cpu}  --repo rpmfusion --kmodname %{name} --filterfi
 
 %setup -q -c -T -a 0
 pushd *RT3070*Linux*STA*
+%patch0 -p1 -b .2.6.34
 %patch1 -p1 -b .no24
 %patch2 -p1 -b .rpmbuild
-%patch3 -p1 -b .NetworkManager
 %patch4 -p1 -b .tftpboot
-%patch5 -p1 -b .2.6.31
 %patch6 -p1 -b .messageflood
-popd
 
 # Fix permissions
 for ext in c h; do
@@ -59,11 +55,12 @@ for ext in c h; do
 done
 
 # To avoid possible conflict with rt2870 driver:
-for sta in */include/os/rt_linux.h */os/linux/Makefile.6 */README_STA* */RT2870STACard.dat ; do
+for sta in common/rtmp_init.c include/rt_ate.h include/os/rt_linux.h README_STA* RT2870STACard.dat ; do
  sed 's|RT2870STA|RT3070STA|g' $sta > tmp.sta
  touch -r $sta tmp.sta
  mv tmp.sta $sta
 done
+popd
 
 for kernel_version in %{?kernel_versions} ; do
  cp -a *RT3070*Linux*STA* _kmod_build_${kernel_version%%___*}
@@ -87,8 +84,8 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
-* Wed Jul 07 2010 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.29
-- rebuild for new kernel
+* Sun Jun 27 2010 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.3.0.2-1
+- Update to 2.3.0.2
 
 * Fri Jun 18 2010 Thorsten Leemhuis <fedora [AT] leemhuis [DOT] info> - 2.1.1.0-3.28
 - rebuild for new kernel
