@@ -6,7 +6,7 @@
 #define buildforkernels newest
 
 Name:		rt3070-kmod
-Version:	2.3.0.2
+Version:	2.3.0.4
 Release:	1%{?dist}
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
@@ -14,11 +14,12 @@ Group:		System Environment/Kernel
 License:	GPLv2+
 URL:		http://www.ralinktech.com/support.php?s=2
 # No more direct link. The file is downloaded from the above page.
-Source0:	DPO_RT3070_LinuxSTA_V2.3.0.2_20100412.tar.bz2
+Source0:	DPO_RT3070_LinuxSTA_V2.3.0.4_20100604.tar.bz2
 Source11:	rt3070-kmodtool-excludekernel-filterfile
 Patch0:		rt3070-2.6.34.patch
 Patch1:		rt3070-no2.4-in-kernelversion.patch
 Patch2:		rt3070-Makefile.x-fixes.patch
+Patch3:		rt3070-additional-devices.patch
 Patch4:		rt3070-strip-tftpboot-copy.patch
 Patch6:		rt3070-suppress-flood.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -46,6 +47,7 @@ pushd *RT3070*Linux*STA*
 %patch0 -p1 -b .2.6.34
 %patch1 -p1 -b .no24
 %patch2 -p1 -b .rpmbuild
+%patch3 -p1 -b .adddev
 %patch4 -p1 -b .tftpboot
 %patch6 -p1 -b .messageflood
 
@@ -84,6 +86,9 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Tue Aug 31 2010 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.3.0.4-1
+- Update to 2.3.0.4
+
 * Sun Jun 27 2010 Orcan Ogetbil <oget [DOT] fedora [AT] gmail [DOT] com> - 2.3.0.2-1
 - Update to 2.3.0.2
 
