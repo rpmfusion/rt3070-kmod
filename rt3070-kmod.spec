@@ -7,7 +7,7 @@
 
 Name:		rt3070-kmod
 Version:	2.3.0.4
-Release:	2%{?dist}.26
+Release:	2%{?dist}.27
 Summary:	Kernel module for wireless devices with Ralink's rt307x chipsets
 
 Group:		System Environment/Kernel
@@ -86,6 +86,9 @@ chmod 0755 $RPM_BUILD_ROOT/%{kmodinstdir_prefix}/*/%{kmodinstdir_postfix}/*
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat Mar 03 2012 Nicolas Chauvet <kwizart@gmail.com> - 2.3.0.4-2.27
+- rebuild for updated kernel
+
 * Thu Mar 01 2012 Nicolas Chauvet <kwizart@gmail.com> - 2.3.0.4-2.26
 - rebuild for updated kernel
 
